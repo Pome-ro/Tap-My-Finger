@@ -15,7 +15,9 @@ returns the content of your tap list (maybe it shouldn't do that?)
 Queries your TapList and Fingers users in the list. Returns objects containing User and Content properties. Content is the full path name of any newly created archives. Use `get-content` to pull the content into your terminal
 
 example `Get-Content (Check-Taps)[0].Content`
+
 example `Check-Taps | % {Get-Content $_.Content}`
+
 example `$newContent = Check-Taps; Write-Host "You have $($newContent.Count) new messages on tap."`
 
 ## Using Tap My Finger
