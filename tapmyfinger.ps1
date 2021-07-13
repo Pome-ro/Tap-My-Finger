@@ -37,7 +37,7 @@ function Finger-Someone {
                 Write-Verbose "Daddy made you some content, open wide!"   
                 $timestamp = Get-Date -UFormat %s
                 $content | Out-File -FilePath (join-path $env:USERPROFILE "fingered\$finger\$timestamp.txt")
-                Write-Output $content
+                Write-Output (Get-Childitem (join-path $env:USERPROFILE "fingered\$finger\$timestamp.txt")),$Content
             } else {
                 $lastFinger = $archive[$archive.count - 1]
                 $content | out-file -filepath  (join-path $env:TEMP "temp.txt")
@@ -47,10 +47,10 @@ function Finger-Someone {
                     Write-Verbose "Daddy made you some content, open wide!"   
                     $timestamp = Get-Date -UFormat %s
                     $content | Out-File -FilePath (join-path $env:USERPROFILE "fingered\$finger\$timestamp.txt")
-                    Write-Output $Content
+                    Write-Output (Get-Childitem (join-path $env:USERPROFILE "fingered\$finger\$timestamp.txt")),$Content
                 } else {
                     Write-Verbose "Here is the last thing posted by $finger"   
-                    write-output $content
+                    Write-Output $lastFinger.fullName,$Content
                 }
             }
         }
@@ -66,7 +66,7 @@ function Tap-Someone {
     param (
         [Parameter()]
         [String]
-        $tapList = (join-path $env:USERPROFILE "fingered") + 'tapList.csv',
+        $tapList = (join-path $env:USERPROFILE 'fingered\tapList.csv'),
         # Parameter help description
         [Parameter(Mandatory)]
         [string]
@@ -79,7 +79,7 @@ function Tap-Someone {
     
     process {
         add-content -Value $user -Path $tapList
-        write-output $tapList
+        write-output (get-content $tapList)
     }
     
     end {
@@ -92,14 +92,35 @@ function Check-Taps {
     param (
         [Parameter()]
         [String]
-        $tapList = (join-path $env:USERPROFILE 'tapList.csv')
+        $tapList = (join-path $env:USERPROFILE 'fingered\tapList.csv')
     )
     
     begin {
         $newContent = @()
-        Convertfrom-CSV -Path $tapList
-        foreach ($user in $tapList) {
-            $content
+        $taps = Get-Content $tapList
+        $timespan = new-timespan -Minutes 5
+        foreach ($user in $taps) {
+            if($user -eq ""){
+
+            } else {
+                Write-Verbose "Checking $user"
+                $finger = Finger-Someone -User $user
+                $lastWriteTime = (gci $finger[0]).LastWriteTime
+                if (((get-date) - $lastwritetime) -gt $timespan) {
+                } else {
+                    $update = [PSCustomObject]@{
+                        user = $user
+                        content = $finger[0]
+                    }
+                    $newContent += $update
+                }
+            }
+        }   
+        if($newContent.length -eq 0){
+            Write-Verbose "No new content."
+            write-output $newContent
+        } else{
+            write-output $newContent
         }
         
     }

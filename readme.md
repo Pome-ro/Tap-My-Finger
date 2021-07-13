@@ -5,17 +5,20 @@ Use this PS1 file in your profile to get updates from users via Finger and check
 There are a handful of commands in this script. 
 
 ### Finger-Someone
-Pulls a users current Finger status and stores it within a folder in `~\fingered\user@name`
+Fingers a users account and stores any nwe content within `~\fingered\user@host`
 
 ### Tap-Someone
-Adds a user to your finger subscriptions stored in `~\fingered\subscriptions.csv`
+Adds a user to your finger subscriptions stored in `~\fingered\taplist.csv`
+returns the content of your tap list (maybe it shouldn't do that?)
 
 ### Check-Taps
-Queries either a user or your subscriptions list and returns `true` or `false`. If the finger result is different then the last archived finger message for the user, it returns `true` otherwise it returns `false`. Returns `false` if there isn't a current finger file. 
+Queries your TapList and Fingers users in the list. Returns objects containing User and Content properties. Content is the full path name of any newly created archives. Use `get-content` to pull the content into your terminal
+
+example `Get-Content (Check-Taps)[0].Content`
+example `Check-Taps | % {Get-Content $_.Content}`
+example `$newContent = Check-Taps; Write-Host "You have $($newContent.Count) new messages on tap."`
 
 ## Using Tap My Finger
-you can dot source this file within your powershell profile to gain access to its commands (maybe one day I'll make this a module)
+you can dot source this file within your powershell profile to gain access to its commands (maybe one day I'll make this a module).
 
-example: `c:\path\to\pull-my-finger\tapmyfinger.ps1`
-
-You can add `Check-Taps` your profile so it runs every time you start powershell for example. Or you can run reach command by hand if you want. 
+dot source example: `. .\tapmyfinger.ps1`
