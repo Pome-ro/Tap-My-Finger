@@ -133,3 +133,42 @@ function Check-Taps {
         
     }
 }
+
+function Publish-PlanFile {
+    [CmdletBinding()]
+    param (
+        # Parameter help description
+        [Parameter(Mandatory)]
+        [string]
+        $Path,
+        # Credentials
+        [Parameter(Mandatory)]
+        [System.Management.Automation.PSCredential]
+        $Credentail = $host.UI.PromptForCredential('Log into HappyNetBox.com','Please Enter your HappyNetBox Handle and Password Credentials','','')
+    )
+    
+    begin {
+        $request = Invoke-WebRequest 'https://www.happynetbox.com/claim' -SessionVariable my_session
+        $Content = Get-Content $Path
+        $form = $request.forms[0]
+        $form.Fields['handle'] = $Credentail.UserName
+        $form.Fields['password'] = $Credentail.GetNetworkCredential().Password
+        $request = Invoke-WebRequest -uri 'https://www.happynetbox.com/claim' -WebSession $my_session -Method POST -Body $form.Fields
+
+        if ($request.content -like "*password mismatch*") {
+            Write-Error -Message "Password Mismatch"
+            return
+        }
+    }
+    
+    process {
+        $form = $request.forms[0]
+        $form.fields['content'] = $content
+        $uri = "https://www.happynetbox.com" + $form.action
+        $request = Invoke-WebRequest -Uri $uri -WebSession $my_session -Method $form.method -Body $form.fields
+    }
+    
+    end {
+        
+    }
+}
